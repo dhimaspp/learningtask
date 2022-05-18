@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:learningtask/bloc/traveler_cubit.dart';
 import 'package:learningtask/component/custom_form.dart';
 import 'package:learningtask/models/get_traveler.dart';
@@ -21,7 +22,10 @@ class _TravelerState extends State<Traveler> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _address = TextEditingController();
 
-  _showModalBottomSheet() {
+  _showModalBottomSheet(
+      {required Function()? onPressed,
+      String mauNgapain = 'Add Traveler',
+      String buttonMauNgapain = 'Add'}) {
     return showModalBottomSheet(
         isScrollControlled: true,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
@@ -36,7 +40,7 @@ class _TravelerState extends State<Traveler> {
               child:
                   Column(mainAxisAlignment: MainAxisAlignment.start, children: [
                 Text(
-                  'Add Traveler',
+                  mauNgapain,
                   style: textInputDecoration.labelStyle!
                       .copyWith(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
@@ -65,18 +69,8 @@ class _TravelerState extends State<Traveler> {
                   width: MediaQuery.of(context).size.width - 20,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(primary: kMaincolor),
-                    onPressed: () async {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => BlocProvider(
-                                    create: (context) => TravelerBlocCubit()
-                                      ..postTravelerData(_name.text,
-                                          _email.text, _address.text),
-                                    child: const TravelerAdded(),
-                                  )));
-                    },
-                    child: const Text('Add'),
+                    onPressed: onPressed,
+                    child: Text(buttonMauNgapain),
                   ),
                 )
               ]),
@@ -106,15 +100,87 @@ class _TravelerState extends State<Traveler> {
                     title: Text(data.travelerinformationResponse!.travelers!
                         .travelerinformation![index].name!),
                     children: [
-                      Text(data.travelerinformationResponse!.travelers!
-                          .travelerinformation![index].email!),
-                      Text(data.travelerinformationResponse!.travelers!
-                          .travelerinformation![index].adderes!)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Email: ' +
+                                    data.travelerinformationResponse!.travelers!
+                                        .travelerinformation![index].email!),
+                                Text('Address: ' +
+                                    data.travelerinformationResponse!.travelers!
+                                        .travelerinformation![index].adderes!)
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                IconButton(
+                                    onPressed: () => _showModalBottomSheet(
+                                        mauNgapain: 'Edit Traveler',
+                                        buttonMauNgapain: 'Edit',
+                                        onPressed: () {
+                                          if (_name.text.isNotEmpty &&
+                                              _email.text.isNotEmpty &&
+                                              _address.text.isNotEmpty) {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder:
+                                                        (_) => BlocProvider(
+                                                              create: (context) => TravelerBlocCubit()
+                                                                ..putTravelerData(
+                                                                    data
+                                                                        .travelerinformationResponse!
+                                                                        .travelers!
+                                                                        .travelerinformation![
+                                                                            index]
+                                                                        .id!,
+                                                                    _name.text,
+                                                                    _email.text,
+                                                                    _address
+                                                                        .text),
+                                                              child:
+                                                                  const TravelerAdded(),
+                                                            )));
+                                          } else {
+                                            EasyLoading.showError(
+                                                'please make sure all form was filled',
+                                                dismissOnTap: true);
+                                          }
+                                        }),
+                                    icon: const Icon(Icons.edit))
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
                     ],
                   );
                 })),
             bottomSheet: GestureDetector(
-              onTap: () => _showModalBottomSheet(),
+              onTap: () => _showModalBottomSheet(onPressed: () {
+                if (_name.text.isNotEmpty &&
+                    _email.text.isNotEmpty &&
+                    _address.text.isNotEmpty) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                                create: (context) => TravelerBlocCubit()
+                                  ..postTravelerData(
+                                      _name.text, _email.text, _address.text),
+                                child: const TravelerAdded(),
+                              )));
+                } else {
+                  EasyLoading.showError('please make sure all form was filled',
+                      dismissOnTap: true);
+                }
+              }),
               child: Container(
                 alignment: Alignment.center,
                 height: 40,

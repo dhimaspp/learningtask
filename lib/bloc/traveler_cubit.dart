@@ -27,6 +27,17 @@ class TravelerBlocCubit extends Cubit<TravelerState> {
       emit(TravelerFailedLoad(travelerResponse));
     }
   }
+
+  putTravelerData(String id, String name, String email, String address) async {
+    TravelerServices apiServices = TravelerServices();
+    final travelerResponse =
+        await apiServices.putTraveler(id, name, email, address);
+    if (travelerResponse is TravelPostResponse) {
+      emit(TravelerPutSuccess(travelerResponse));
+    } else {
+      emit(TravelerFailedLoad(travelerResponse));
+    }
+  }
 }
 
 abstract class TravelerState extends Equatable {
@@ -51,6 +62,15 @@ class TravelerPostSuccess extends TravelerState {
   final TravelPostResponse travelerPageResponse;
 
   const TravelerPostSuccess(this.travelerPageResponse);
+
+  @override
+  List<Object> get props => [travelerPageResponse];
+}
+
+class TravelerPutSuccess extends TravelerState {
+  final TravelPostResponse travelerPageResponse;
+
+  const TravelerPutSuccess(this.travelerPageResponse);
 
   @override
   List<Object> get props => [travelerPageResponse];
