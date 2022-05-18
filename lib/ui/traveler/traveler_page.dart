@@ -96,42 +96,50 @@ class _TravelerState extends State<Traveler> {
                 itemCount: data.travelerinformationResponse!.travelers!
                     .travelerinformation!.length,
                 itemBuilder: ((ctx, index) {
-                  return ExpansionTile(
-                    title: Text(data.travelerinformationResponse!.travelers!
-                        .travelerinformation![index].name!),
+                  return Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      ExpansionTile(
+                        title: Text(data.travelerinformationResponse!.travelers!
+                            .travelerinformation![index].name!),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Email: ' +
-                                    data.travelerinformationResponse!.travelers!
-                                        .travelerinformation![index].email!),
-                                Text('Address: ' +
-                                    data.travelerinformationResponse!.travelers!
-                                        .travelerinformation![index].adderes!)
-                              ],
-                            ),
-                            Column(
-                              children: [
-                                IconButton(
-                                    onPressed: () => _showModalBottomSheet(
-                                        mauNgapain: 'Edit Traveler',
-                                        buttonMauNgapain: 'Edit',
-                                        onPressed: () {
-                                          if (_name.text.isNotEmpty &&
-                                              _email.text.isNotEmpty &&
-                                              _address.text.isNotEmpty) {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder:
-                                                        (_) => BlocProvider(
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Email: ' +
+                                        data
+                                            .travelerinformationResponse!
+                                            .travelers!
+                                            .travelerinformation![index]
+                                            .email!),
+                                    Text('Address: ' +
+                                        data
+                                            .travelerinformationResponse!
+                                            .travelers!
+                                            .travelerinformation![index]
+                                            .adderes!)
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    IconButton(
+                                        onPressed: () => _showModalBottomSheet(
+                                            mauNgapain: 'Edit Traveler',
+                                            buttonMauNgapain: 'Edit',
+                                            onPressed: () {
+                                              if (_name.text.isNotEmpty &&
+                                                  _email.text.isNotEmpty &&
+                                                  _address.text.isNotEmpty) {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            BlocProvider(
                                                               create: (context) => TravelerBlocCubit()
                                                                 ..putTravelerData(
                                                                     data
@@ -147,18 +155,23 @@ class _TravelerState extends State<Traveler> {
                                                               child:
                                                                   const TravelerAdded(),
                                                             )));
-                                          } else {
-                                            EasyLoading.showError(
-                                                'please make sure all form was filled',
-                                                dismissOnTap: true);
-                                          }
-                                        }),
-                                    icon: const Icon(Icons.edit))
+                                              } else {
+                                                EasyLoading.showError(
+                                                    'please make sure all form was filled',
+                                                    dismissOnTap: true);
+                                              }
+                                            }),
+                                        icon: const Icon(Icons.edit))
+                                  ],
+                                )
                               ],
-                            )
-                          ],
-                        ),
+                            ),
+                          ),
+                        ],
                       ),
+                      const Divider(
+                        thickness: 1,
+                      )
                     ],
                   );
                 })),
