@@ -210,6 +210,13 @@ class _TravelerState extends State<Traveler> {
               ),
             ),
           );
+        } else if (state is TravelerFailedLoad) {
+          return Center(
+            child: Text(
+              "Oops there's something wrong\nPlease check your internet connection",
+              style: textInputDecoration.labelStyle,
+            ),
+          );
         } else {
           return const Center(
             child: CircularProgressIndicator(color: kMaincolor),

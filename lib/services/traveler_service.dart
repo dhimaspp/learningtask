@@ -34,7 +34,7 @@ class TravelerServices {
       } else if (error.type == DioErrorType.connectTimeout) {
         return 'Koneksi terhenti, Harap periksa internet koneksi anda';
       } else {
-        print(error.response!.data);
+        // print(error.response!.data);
         return 'unknown error';
       }
     }
@@ -72,7 +72,7 @@ class TravelerServices {
       } else if (error.type == DioErrorType.other) {
         return 'Koneksi terhenti, Harap periksa internet koneksi anda';
       } else {
-        return error.response!.data;
+        return 'unknown error';
       }
     }
   }
@@ -117,7 +117,33 @@ class TravelerServices {
       } else if (error.type == DioErrorType.other) {
         return 'Koneksi terhenti, Harap periksa internet koneksi anda';
       } else {
-        return error.response!.data;
+        return 'unknown error';
+      }
+    }
+  }
+
+  Future deleteTraveler(String id) async {
+    try {
+      var dio = await dioConfig.dio();
+
+      Response response = await dio!.delete(pathPostTraveler + '/' + id);
+      xml2Json.parse(response.data);
+      var convertedXML = xml2Json.toParker();
+      print(convertedXML);
+      final data = jsonDecode(convertedXML);
+      print(data);
+
+      return TravelPostResponse.fromJson(data);
+    } on DioError catch (error) {
+      if (error.type == DioErrorType.response) {
+        print(error.response!.data);
+        var errorBody = error.response!.data;
+        return errorBody;
+      } else if (error.type == DioErrorType.connectTimeout) {
+        return 'Koneksi terhenti, Harap periksa internet koneksi anda';
+      } else {
+        // print(error.response!.data);
+        return 'unknown error';
       }
     }
   }
