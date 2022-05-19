@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:learningtask/bloc/traveler_cubit.dart';
+import 'package:learningtask/component/custom_card_traveler.dart';
 import 'package:learningtask/component/custom_form.dart';
 import 'package:learningtask/theme/const_theme.dart';
 import 'package:learningtask/ui/onboarding.dart';
@@ -82,6 +83,11 @@ class _TravelerAddedState extends State<TravelerAdded> {
     return BlocBuilder<TravelerBlocCubit, TravelerState>(
       builder: (context, state) {
         if (state is TravelerPostSuccess) {
+          final id = state.travelerPageResponse.travelerinformation!.id!;
+          final name = state.travelerPageResponse.travelerinformation!.name!;
+          final email = state.travelerPageResponse.travelerinformation!.email!;
+          final address =
+              state.travelerPageResponse.travelerinformation!.adderes!;
           return WillPopScope(
             onWillPop: () async {
               Navigator.of(context)
@@ -95,126 +101,91 @@ class _TravelerAddedState extends State<TravelerAdded> {
                 backgroundColor: kMaincolor,
                 elevation: 0,
               ),
-              body: Container(
-                margin: const EdgeInsets.all(12),
-                height: 200,
-                width: MediaQuery.of(context).size.width - 40,
-                child: Card(
-                  elevation: 9,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 12, right: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'ID: ',
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                                Text(
-                                  state.travelerPageResponse
-                                      .travelerinformation!.id!,
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  'Name: ',
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                                Text(
-                                  state.travelerPageResponse
-                                      .travelerinformation!.name!,
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  'Email: ',
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                                Text(
-                                  state.travelerPageResponse
-                                      .travelerinformation!.email!,
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  'Address: ',
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                                Text(
-                                  state.travelerPageResponse
-                                      .travelerinformation!.adderes!,
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                          ],
-                        ),
-                        IconButton(
-                            onPressed: () => _showModalBottomSheet(
-                                mauNgapain: 'Edit Traveler',
-                                buttonMauNgapain: 'Edit',
-                                onPressed: () {
-                                  if (_name.text.isNotEmpty &&
-                                      _email.text.isNotEmpty &&
-                                      _address.text.isNotEmpty) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) => BlocProvider(
-                                                  create: (context) =>
-                                                      TravelerBlocCubit()
-                                                        ..putTravelerData(
-                                                            state
-                                                                .travelerPageResponse
-                                                                .travelerinformation!
-                                                                .id!,
-                                                            _name.text,
-                                                            _email.text,
-                                                            _address.text),
-                                                  child: const TravelerAdded(),
-                                                )));
-                                  } else {
-                                    EasyLoading.showError(
-                                        'please make sure all form was filled',
-                                        dismissOnTap: true);
-                                  }
-                                }),
-                            icon: const Icon(Icons.edit))
-                      ],
+              body: CustomCardTraveler(
+                id: id,
+                name: name,
+                email: email,
+                address: address,
+                onPressedPut: () {
+                  _showModalBottomSheet(
+                      buttonMauNgapain: 'Edit',
+                      mauNgapain: 'Edit Traveler',
+                      onPressed: () {
+                        if (_name.text.isNotEmpty &&
+                            _email.text.isNotEmpty &&
+                            _address.text.isNotEmpty) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => BlocProvider(
+                                        create: (context) => TravelerBlocCubit()
+                                          ..putTravelerData(id, _name.text,
+                                              _email.text, _address.text),
+                                        child: const TravelerAdded(),
+                                      )));
+                        } else {
+                          EasyLoading.showError(
+                              'please make sure all form was filled',
+                              dismissOnTap: true);
+                        }
+                      });
+                },
+                onPressedDelete: () => showDialog(
+                  context: context,
+                  builder: (c) => AlertDialog(
+                    title: const Text('Delete Traveler'),
+                    content: const Text(
+                      'Are you sure want to delete traveler?',
                     ),
+                    actions: [
+                      TextButton(
+                        child: const Text(
+                          'Yes',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        onPressed: () async {
+                          await context
+                              .read<TravelerBlocCubit>()
+                              .deleteTravelerData(id);
+                          TravelerState newState =
+                              context.read<TravelerBlocCubit>().state;
+                          if (newState is TravelerDeleteSuccess) {
+                            EasyLoading.showSuccess(
+                                'Data Traveler has been deleted',
+                                dismissOnTap: true);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => BlocProvider(
+                                          create: (context) =>
+                                              TravelerBlocCubit()
+                                                ..fetchingTravelerData(1),
+                                          child: const Traveler(),
+                                        )));
+                          } else {
+                            EasyLoading.showError('Delete error',
+                                dismissOnTap: true);
+                            Navigator.of(context).pop();
+                          }
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('No',
+                            style: TextStyle(color: Colors.black)),
+                        onPressed: () => Navigator.pop(c, false),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           );
         } else if (state is TravelerPutSuccess) {
+          final id = state.travelerPageResponse.travelerinformation!.id!;
+          final name = state.travelerPageResponse.travelerinformation!.name!;
+          final email = state.travelerPageResponse.travelerinformation!.email!;
+          final address =
+              state.travelerPageResponse.travelerinformation!.adderes!;
           return WillPopScope(
             onWillPop: () async {
               Navigator.of(context)
@@ -228,187 +199,80 @@ class _TravelerAddedState extends State<TravelerAdded> {
                 backgroundColor: kMaincolor,
                 elevation: 0,
               ),
-              body: Container(
-                margin: const EdgeInsets.all(12),
-                height: 200,
-                width: MediaQuery.of(context).size.width - 40,
-                child: Card(
-                  elevation: 9,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 12, right: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'ID: ',
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                                Text(
-                                  state.travelerPageResponse
-                                      .travelerinformation!.id!,
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  'Name: ',
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                                Text(
-                                  state.travelerPageResponse
-                                      .travelerinformation!.name!,
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  'Email: ',
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                                Text(
-                                  state.travelerPageResponse
-                                      .travelerinformation!.email!,
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  'Address: ',
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                                Text(
-                                  state.travelerPageResponse
-                                      .travelerinformation!.adderes!,
-                                  style: textInputDecoration.labelStyle,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                          ],
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                                onPressed: () => _showModalBottomSheet(
-                                    mauNgapain: 'Edit Traveler',
-                                    buttonMauNgapain: 'Edit',
-                                    onPressed: () {
-                                      if (_name.text.isNotEmpty &&
-                                          _email.text.isNotEmpty &&
-                                          _address.text.isNotEmpty) {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (_) => BlocProvider(
-                                                      create: (context) =>
-                                                          TravelerBlocCubit()
-                                                            ..putTravelerData(
-                                                                state
-                                                                    .travelerPageResponse
-                                                                    .travelerinformation!
-                                                                    .id!,
-                                                                _name.text,
-                                                                _email.text,
-                                                                _address.text),
-                                                      child:
-                                                          const TravelerAdded(),
-                                                    )));
-                                      } else {
-                                        EasyLoading.showError(
-                                            'please make sure all form was filled',
-                                            dismissOnTap: true);
-                                      }
-                                    }),
-                                icon: const Icon(Icons.edit)),
-                            IconButton(
-                                onPressed: () => showDialog(
-                                      context: context,
-                                      builder: (c) => AlertDialog(
-                                        title: const Text('Delete Traveler'),
-                                        content: const Text(
-                                          'Are you sure want to delete traveler?',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            child: const Text(
-                                              'Yes',
-                                              style: TextStyle(
-                                                  color: Colors.black),
-                                            ),
-                                            onPressed: () async {
-                                              await context
-                                                  .read<TravelerBlocCubit>()
-                                                  .deleteTravelerData(state
-                                                      .travelerPageResponse
-                                                      .travelerinformation!
-                                                      .id!);
-                                              TravelerState newState = context
-                                                  .read<TravelerBlocCubit>()
-                                                  .state;
-                                              if (newState
-                                                  is TravelerDeleteSuccess) {
-                                                EasyLoading.showSuccess(
-                                                    'Data Traveler has been deleted',
-                                                    dismissOnTap: true);
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            BlocProvider(
-                                                              create: (context) =>
-                                                                  TravelerBlocCubit()
-                                                                    ..fetchingTravelerData(
-                                                                        1),
-                                                              child:
-                                                                  const Traveler(),
-                                                            )));
-                                              } else {
-                                                EasyLoading.showError(
-                                                    'Delete error',
-                                                    dismissOnTap: true);
-                                                Navigator.of(context).pop();
-                                              }
-                                            },
-                                          ),
-                                          TextButton(
-                                            child: const Text('No',
-                                                style: TextStyle(
-                                                    color: Colors.black)),
-                                            onPressed: () =>
-                                                Navigator.pop(c, false),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                icon: const Icon(Icons.delete_forever_rounded)),
-                          ],
-                        )
-                      ],
+              body: CustomCardTraveler(
+                id: id,
+                name: name,
+                email: email,
+                address: address,
+                onPressedPut: () {
+                  _showModalBottomSheet(
+                      buttonMauNgapain: 'Edit',
+                      mauNgapain: 'Edit Traveler',
+                      onPressed: () {
+                        if (_name.text.isNotEmpty &&
+                            _email.text.isNotEmpty &&
+                            _address.text.isNotEmpty) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => BlocProvider(
+                                        create: (context) => TravelerBlocCubit()
+                                          ..putTravelerData(id, _name.text,
+                                              _email.text, _address.text),
+                                        child: const TravelerAdded(),
+                                      )));
+                        } else {
+                          EasyLoading.showError(
+                              'please make sure all form was filled',
+                              dismissOnTap: true);
+                        }
+                      });
+                },
+                onPressedDelete: () => showDialog(
+                  context: context,
+                  builder: (c) => AlertDialog(
+                    title: const Text('Delete Traveler'),
+                    content: const Text(
+                      'Are you sure want to delete traveler?',
                     ),
+                    actions: [
+                      TextButton(
+                        child: const Text(
+                          'Yes',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        onPressed: () async {
+                          await context
+                              .read<TravelerBlocCubit>()
+                              .deleteTravelerData(id);
+                          TravelerState newState =
+                              context.read<TravelerBlocCubit>().state;
+                          if (newState is TravelerDeleteSuccess) {
+                            EasyLoading.showSuccess(
+                                'Data Traveler has been deleted',
+                                dismissOnTap: true);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => BlocProvider(
+                                          create: (context) =>
+                                              TravelerBlocCubit()
+                                                ..fetchingTravelerData(1),
+                                          child: const Traveler(),
+                                        )));
+                          } else {
+                            EasyLoading.showError('Delete error',
+                                dismissOnTap: true);
+                            Navigator.of(context).pop();
+                          }
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('No',
+                            style: TextStyle(color: Colors.black)),
+                        onPressed: () => Navigator.pop(c, false),
+                      ),
+                    ],
                   ),
                 ),
               ),
